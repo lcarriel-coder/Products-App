@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import { StyleProp, StyleSheet, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
@@ -10,9 +10,9 @@ interface Props extends TextInputProps {
 }
 
 
-const ThemedTextInput = ({ icon, ...rest }: Props) => {
+const ThemedTextInput = ({ icon, style, ...rest }: Props) => {
 
-      const primaryColor = useThemeColor({}, 'primary');
+  const primaryColor = useThemeColor({}, 'primary');
   const textColor = useThemeColor({}, 'text');
 
   const [isActive, setIsActive] = useState(false);
@@ -21,13 +21,18 @@ const ThemedTextInput = ({ icon, ...rest }: Props) => {
 
 
    return (
-    <View
-      style={{
-        ...styles.border,
-        borderColor: isActive ? primaryColor : '#ccc',
-      }}
-      onTouchStart={() => inputRef.current?.focus()}
-    >
+     <View
+       style={
+         [
+           {
+             ...styles.border,
+             borderColor: isActive ? primaryColor : '#ccc',
+           },
+           style as StyleProp<ViewStyle>
+         ]
+       }
+       onTouchStart={() => inputRef.current?.focus()}
+     >
       {icon && (
         <Ionicons
           name={icon}
@@ -60,7 +65,7 @@ const styles = StyleSheet.create({
   border: {
     borderWidth: 1,
     borderRadius: 5,
-    padding: 5,
+    padding: 10,
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
