@@ -10,6 +10,8 @@ export const getProductById = async (id:string):Promise<Product> => {
 
         return data;
 
+        
+
 
     } catch (error) {
 

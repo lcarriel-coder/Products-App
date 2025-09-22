@@ -13,14 +13,14 @@ export const getProducts = async (limit = 20, offset = 0) => {
             }
         });
 
-        console.log(data);
+      
 
 
         return data.map(product => ({
             ...product,
             images: product.images.map(
                 (image) => `${API_URL}/files/product/${image}`)
-        }))
+        }));
 
     } catch (error) {
 

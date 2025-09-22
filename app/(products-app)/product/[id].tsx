@@ -1,27 +1,61 @@
+import ProductImages from '@/presentation/products/components/ProductImages';
+import { useProduct } from '@/presentation/products/hooks/useProduct';
 import { ThemedView } from '@/presentation/theme/components/themed-view';
 import ThemedTextInput from '@/presentation/theme/components/ui/ThemedTextInput';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { Redirect, useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useEffect } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 const ProductScreen = () => {
 
+  const { id } = useLocalSearchParams();
   const navigation = useNavigation();
+
+  const { productQuery } = useProduct(`${id}`);
+
+
+
   useEffect(() => {
-
-
-
     navigation.setOptions({
 
       headerRight: () => (
         <Ionicons name='camera-outline' size={25} />
       )
     })
-
   }, []);
 
 
+  useEffect(() => {
+
+    if (productQuery.data) {
+      navigation.setOptions({
+        title: productQuery.data.title,
+      })
+    }
+
+  }, [productQuery.data]);
+
+
+
+  if (productQuery.isLoading) {
+
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size={30} />
+      </View>
+    );
+
+  }
+
+
+  if (!productQuery.data) {
+
+    return <Redirect href="/(products-app)/(home)" />
+
+  }
+
+  const product = productQuery.data!;
 
   return (
     <KeyboardAvoidingView
@@ -30,6 +64,9 @@ const ProductScreen = () => {
     >
       <ScrollView>
 
+
+
+        <ProductImages images={product.images} />
 
         <ThemedView style={{ marginHorizontal: 10, marginTop: 20 }}>
 
