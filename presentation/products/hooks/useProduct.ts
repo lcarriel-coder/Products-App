@@ -1,45 +1,45 @@
-import { Product } from '@/core/products/interface/product.interface';
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert } from 'react-native';
-import { getProductById } from './../../../core/products/actions/get-product-by-id.action';
+import { updateCreateProduct } from "@/core/products/actions/create-update-product.action";
+import { Product } from "@/core/products/interface/product.interface";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
+import { Alert } from "react-native";
+import { getProductById } from "./../../../core/products/actions/get-product-by-id.action";
 
+export const useProduct = (productId: string) => {
 
-export const useProduct = (productId:string) => {
-  
-    const productQuery = useQuery({
-        queryKey:['products', productId],
-        queryFn: () => getProductById(productId),
-        staleTime : 1000*60*60
-    });
+  const queryClient = useQueryClient();
+  const productIdRef = useRef(productId); //new UUID
 
-    //Mutacion
+  const productQuery = useQuery({
+    queryKey: ["products", productId],
+    queryFn: () => getProductById(productId),
+    staleTime: 1000 * 60 * 60,
+  });
 
-    const productMutation = useMutation({
-        mutationFn : async (data : Product) => {
-            console.log({data});
-            
-            return data;
-        },
-        onSuccess(data:Product){
-            //Invalidar products queries
+  //Mutacion
 
+  const productMutation = useMutation({
+    mutationFn: async (data: Product) => updateCreateProduct({...data,
+        id:productIdRef.current
+    }),
 
-            Alert.alert('Producto Guardado',`${ data.title } se guardo correctamente`);
+    onSuccess(data: Product) {
+     
+      productIdRef.current = data.id; // esto es para los id que son "new"
 
-        }
-    });
+       //Invalidar products queries
+      queryClient.invalidateQueries({ queryKey: ["products", "infinite"] });
 
+      queryClient.invalidateQueries({ queryKey: ["products", data.id] });
 
-    //
+      Alert.alert("Producto Guardado", `${data.title} se guardo correctamente`);
+    },
+  });
 
+  //
 
-    return {
-
-        productQuery,
-        productMutation
-
-    }
-
-
-
-}
+  return {
+    productQuery,
+    productMutation,
+  };
+};
