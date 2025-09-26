@@ -1,12 +1,13 @@
 import { Size } from '@/core/products/interface/product.interface';
 import ProductImages from '@/presentation/products/components/ProductImages';
 import { useProduct } from '@/presentation/products/hooks/useProduct';
+import { useCameraStore } from '@/presentation/store/useCameraStore';
 import { ThemedView } from '@/presentation/theme/components/themed-view';
+import MenuIconButton from '@/presentation/theme/components/ui/MenuIconButton';
 import ThemedButton from '@/presentation/theme/components/ui/ThemedButton';
 import ThemedButtonGroup from '@/presentation/theme/components/ui/ThemedButtonGroup';
 import ThemedTextInput from '@/presentation/theme/components/ui/ThemedTextInput';
-import { Ionicons } from '@expo/vector-icons';
-import { Redirect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Redirect, router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { Formik } from 'formik';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
@@ -14,20 +15,32 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } f
 
 const ProductScreen = () => {
 
+  const {clearImages , selectedImages } = useCameraStore();
+
   const { id } = useLocalSearchParams();
   const navigation = useNavigation();
 
   const { productQuery, productMutation } = useProduct(`${id}`);
 
 
+  useEffect(() => {
+
+    return () => {
+      clearImages();
+    }
+
+  }, [])
+  
 
   useEffect(() => {
-    navigation.setOptions({
 
-      headerRight: () => (
-        <Ionicons name='camera-outline' size={25} />
-      )
-    })
+    navigation.setOptions({
+      headerRight: () => <MenuIconButton
+        onPress={() => router.push('/camera')}
+        icon="camera-outline"
+      />
+    });
+
   }, []);
 
 
@@ -67,7 +80,7 @@ const ProductScreen = () => {
 
     <Formik
       initialValues={product}
-      onSubmit={(productLike) => productMutation.mutate(productLike) }
+      onSubmit={(productLike) => productMutation.mutate(productLike)}
     >
 
 
@@ -81,7 +94,7 @@ const ProductScreen = () => {
 
 
 
-            <ProductImages images={values.images} />
+            <ProductImages images={[...product.images , ...selectedImages]} />
 
             <ThemedView style={{ marginHorizontal: 10, marginTop: 20 }}>
 
@@ -174,7 +187,7 @@ const ProductScreen = () => {
             }}>
               <ThemedButton
                 icon='save-outline'
-                onPress={()=> handleSubmit()}
+                onPress={() => handleSubmit()}
               >
                 Guardar
 
